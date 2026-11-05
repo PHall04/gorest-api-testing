@@ -23,6 +23,8 @@ jobs:
       - name: Run smoke tests
         if: github.ref != 'refs/heads/main'
         run: mvn -B clean test -Dcucumber.filter.tags="@smoke"
+        env:
+          GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
 
       - name: Run all tests
         if: github.ref == 'refs/heads/main'
