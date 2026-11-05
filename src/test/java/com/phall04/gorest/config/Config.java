@@ -1,5 +1,7 @@
 package com.phall04.gorest.config;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -23,5 +25,19 @@ public final class Config {
 
     public static String baseUrl() {
         return PROPERTIES.getProperty("base.url");
+    }
+
+    public static String token() {
+        String token = System.getenv("GOREST_TOKEN");
+
+        if (token == null || token.isBlank()) {
+            token = Dotenv.configure().ignoreIfMissing().load().get("GOREST_TOKEN");
+        }
+
+        if (token == null || token.isBlank()) {
+            throw new IllegalStateException("GOREST_TOKEN is not set");
+        }
+
+        return token;
     }
 }
