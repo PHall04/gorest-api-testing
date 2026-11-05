@@ -33,7 +33,7 @@ public class UserClient {
                 .post("/users");
     }
 
-    public Response deleteUser(long id) {
+    public Response deleteUser(String id) {
         return authenticatedRequest()
                 .when()
                 .delete("/users/" + id);

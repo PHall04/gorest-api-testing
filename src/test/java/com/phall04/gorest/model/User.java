@@ -10,4 +10,4 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 
 //Object representation of a GOREST user. For easier JSON conversion
-public record User(Long id, String name, String email, String gender, String status) {}
+public record User(String id, String name, String email, String status) {}

@@ -17,12 +17,12 @@ public class UserSteps {
     private final UserClient userClient = new UserClient();
     private Response response;
     private User newUser;
-    private Long createdUserId;
+    private String createdUserId;
 
     @Given("I have valid new user details")
     public void iHaveValidNewUserDetails() {
         String email = "api-test-" + UUID.randomUUID() + "@example.com";
-        newUser = new User(null, "API Test User", email, "female", "active");
+        newUser = new User(null, "API Test User", email, "active");
     }
 
     @When("I request the list of users")
@@ -34,7 +34,7 @@ public class UserSteps {
     public void iCreateTheUser() {
         response = userClient.createUser(newUser);
         if (response.statusCode() == 201) {
-            createdUserId = response.jsonPath().getLong("id");
+            createdUserId = response.jsonPath().getString("id");
         }
     }
 
@@ -45,7 +45,7 @@ public class UserSteps {
 
     @Then("the response should contain at least one user")
     public void theResponseShouldContainAtLeastOneUser() {
-        response.then().body("size()", greaterThan(0));
+        response.then().body("data.size()", greaterThan(0));
     }
 
     @Then("the response should match the new user details")
@@ -53,7 +53,6 @@ public class UserSteps {
         response.then()
                 .body("name", equalTo(newUser.name()))
                 .body("email", equalTo(newUser.email()))
-                .body("gender", equalTo(newUser.gender()))
                 .body("status", equalTo(newUser.status()));
     }
 
