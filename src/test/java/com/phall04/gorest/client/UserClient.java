@@ -5,9 +5,9 @@ import com.phall04.gorest.model.User;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+
 import static io.restassured.RestAssured.given;
 
-//A class representing the UserEndpoint of GOREST
 public class UserClient {
 
     private RequestSpecification baseRequest() {
@@ -25,6 +25,10 @@ public class UserClient {
         return baseRequest().when().get("/users");
     }
 
+    public Response getUser(String id) {
+        return authenticatedRequest().when().get("/users/{id}", id);
+    }
+
     public Response createUser(User user) {
         return authenticatedRequest()
                 .contentType(ContentType.JSON)
@@ -33,9 +37,15 @@ public class UserClient {
                 .post("/users");
     }
 
-    public Response deleteUser(String id) {
+    public Response updateUser(String id, User changes) {
         return authenticatedRequest()
+                .contentType(ContentType.JSON)
+                .body(changes)
                 .when()
-                .delete("/users/" + id);
+                .patch("/users/{id}", id);
+    }
+
+    public Response deleteUser(String id) {
+        return authenticatedRequest().when().delete("/users/{id}", id);
     }
 }
