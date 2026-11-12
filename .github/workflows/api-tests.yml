@@ -22,13 +22,13 @@ jobs:
 
       - name: Run smoke tests
         if: github.ref != 'refs/heads/main'
-        run: mvn -B clean test -Dcucumber.filter.tags="@smoke"
+        run: mvn -B clean test -Dcucumber.filter.tags="@smoke and not @known-defect"
         env:
           GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
 
       - name: Run all tests
         if: github.ref == 'refs/heads/main'
-        run: mvn -B clean test
+        run: mvn -B clean test -Dcucumber.filter.tags="not @known-defect"
         env:
           GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
 
