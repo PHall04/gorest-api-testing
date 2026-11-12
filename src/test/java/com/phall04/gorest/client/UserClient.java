@@ -48,4 +48,28 @@ public class UserClient {
     public Response deleteUser(String id) {
         return authenticatedRequest().when().delete("/users/{id}", id);
     }
+
+    public Response createUserWithoutToken(User user) {
+        return baseRequest()
+                .contentType(ContentType.JSON)
+                .body(user)
+                .when()
+                .post("/users");
+    }
+
+    public Response createUserWithToken(User user, String token) {
+        return baseRequest()
+                .header("Authorization", "Bearer " + token)
+                .contentType(ContentType.JSON)
+                .body(user)
+                .when()
+                .post("/users");
+    }
+
+    public Response getUsersWithParam(String name, String value) {
+        return baseRequest()
+                .queryParam(name, value)
+                .when()
+                .get("/users");
+    }
 }
