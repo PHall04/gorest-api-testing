@@ -4,8 +4,7 @@ import com.phall04.gorest.support.TestContext;
 import io.cucumber.java.en.Then;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.*;
 
 public class CommonSteps {
     private final TestContext context;
@@ -27,5 +26,10 @@ public class CommonSteps {
     @Then("the response should report an error for field {string}")
     public void theResponseShouldReportAnErrorForField(String pointer) {
         context.getResponse().then().body("errors.pointer", hasItem(pointer));
+    }
+
+    @Then("the response meta should include a total")
+    public void theResponseMetaShouldIncludeATotal() {
+        context.getResponse().then().body("meta.total", greaterThan(0));
     }
 }

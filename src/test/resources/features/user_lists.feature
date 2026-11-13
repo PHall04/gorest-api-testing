@@ -27,3 +27,14 @@ Feature: User lists
       | size |
       | 0    |
       | 101  |
+
+  Scenario: List users with the default page size
+    When I request the list of users
+    Then the response status should be 200
+    And the response should contain 25 users
+
+  Scenario: List users with a total count
+    When I request the list of users with parameters:
+      | page[count] | true |
+    Then the response status should be 200
+    And the response meta should include a total
