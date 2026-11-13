@@ -51,3 +51,5 @@ Feature: Users
     Then the response status should be 204
     And the response body should be empty
     And requesting that user by ID should return 404
+
+  Scenario:

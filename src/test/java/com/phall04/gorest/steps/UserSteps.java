@@ -7,6 +7,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import java.util.Map;
 
 import java.util.UUID;
 
@@ -166,6 +167,16 @@ public class UserSteps {
     @When("I request the list of users with parameter {string} set to {string}")
     public void iRequestTheListOfUsersWithParameter(String name, String value) {
         context.setResponse(userClient.getUsersWithParam(name, value));
+    }
+
+    @When("I request the list of users with parameters:")
+    public void iRequestTheListOfUsersWithParameters(Map<String, String> params) {
+        context.setResponse(userClient.getUsers(params));
+    }
+
+    @Then("the response should contain {int} users")
+    public void theResponseShouldContainUsers(int count) {
+        context.getResponse().then().body("data.size()", equalTo(count));
     }
 
     @After

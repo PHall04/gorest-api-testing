@@ -5,6 +5,7 @@ import com.phall04.gorest.model.User;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 
@@ -21,12 +22,22 @@ public class UserClient {
                 .header("Authorization", "Bearer " + Config.token());
     }
 
-    public Response getUsers() {
-        return baseRequest().when().get("/users");
-    }
-
     public Response getUser(String id) {
         return authenticatedRequest().when().get("/users/{id}", id);
+    }
+    public Response getUsers() {
+        return getUsers(Map.of());
+    }
+
+    public Response getUsers(Map<String, String> params) {
+        return baseRequest()
+                .queryParams(params)
+                .when()
+                .get("/users");
+    }
+
+    public Response getUsersWithParam(String name, String value) {
+        return getUsers(Map.of(name, value));
     }
 
     public Response createUser(User user) {
@@ -64,12 +75,5 @@ public class UserClient {
                 .body(user)
                 .when()
                 .post("/users");
-    }
-
-    public Response getUsersWithParam(String name, String value) {
-        return baseRequest()
-                .queryParam(name, value)
-                .when()
-                .get("/users");
     }
 }
