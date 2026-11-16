@@ -4,16 +4,19 @@ import com.phall04.gorest.client.UserClient;
 import com.phall04.gorest.model.User;
 import com.phall04.gorest.support.TestContext;
 import io.cucumber.java.After;
+import io.cucumber.java.PendingException;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.hamcrest.MatcherAssert;
+
+import java.util.List;
 import java.util.Map;
 
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.oneOf;
+import static org.hamcrest.Matchers.*;
 
 public class UserSteps {
     private final UserClient userClient = new UserClient();
@@ -21,6 +24,7 @@ public class UserSteps {
     private String createdUserId;
     private boolean userDeleted;
     private final TestContext context;
+    private List previousPageID;
 
     public UserSteps(TestContext context) {
         this.context = context;
@@ -179,10 +183,29 @@ public class UserSteps {
         context.getResponse().then().body("data.size()", equalTo(count));
     }
 
+    @When("I request the next page of users")
+    public void iRequestTheNextPageOfUsers() {
+        previousPageID = context.getResponse().jsonPath().getList("data.id");
+        String cursor = context.getResponse().jsonPath().getString("meta.next_cursor");
+
+        context.setResponse(userClient.getUsers(Map.of(
+                "page[after]", cursor,
+                "page[size]", "5"
+        )));
+    }
+
+    @And("the response should contain none of the users from the previous page")
+    public void theResponseShouldContainNoneOfTheUsersFromThePreviousPage() {
+        context.getResponse().then()
+                .body("data.id", everyItem(not(in(previousPageID))));
+    }
+
     @After
     public void deleteCreatedUser() {
         if (createdUserId != null && !userDeleted) {
             userClient.deleteUser(createdUserId).then().statusCode(204);
         }
     }
+
+
 }

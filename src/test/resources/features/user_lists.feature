@@ -38,3 +38,12 @@ Feature: User lists
       | page[count] | true |
     Then the response status should be 200
     And the response meta should include a total
+
+  Scenario: Get the next page of users
+    Given I request the list of users with parameters:
+      | page[size] | 5 |
+    And the response should contain 5 users
+    When I request the next page of users
+    Then the response status should be 200
+    And the response should contain 5 users
+    And the response should contain none of the users from the previous page
