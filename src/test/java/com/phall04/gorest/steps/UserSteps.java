@@ -200,6 +200,25 @@ public class UserSteps {
                 .body("data.id", everyItem(not(in(previousPageID))));
     }
 
+    @When("I request page {int} of users")
+    public void iRequestPageOfUsers(int pageNumber) {
+        previousPageID = context.getResponse().jsonPath().getList("data.id");
+        context.setResponse(userClient.getUsers(Map.of(
+                "page[number]", String.valueOf(pageNumber),
+                "page[size]", "5")));
+    }
+
+    @When("I request the next page of users with page number {int}")
+    public void iRequestTheNextPageOfUsersWithPageNumber(int pageNumber) {
+        previousPageID = context.getResponse().jsonPath().getList("data.id");
+        String cursor = context.getResponse().jsonPath().getString("meta.next_cursor");
+
+        context.setResponse(userClient.getUsers(Map.of(
+                "page[number]", String.valueOf(pageNumber),
+                "page[size]", "5",
+                "page[after]", cursor)));
+    }
+
     @After
     public void deleteCreatedUser() {
         if (createdUserId != null && !userDeleted) {

@@ -47,3 +47,19 @@ Feature: User lists
     Then the response status should be 200
     And the response should contain 5 users
     And the response should contain none of the users from the previous page
+
+  Scenario: Get the second page of users by page number
+    Given I request the list of users with parameters:
+      | page[number] | 1 |
+      | page[size]   | 5 |
+    And the response should contain 5 users
+    When I request page 2 of users
+    Then the response status should be 200
+    And the response should contain 5 users
+    And the response should contain none of the users from the previous page
+
+  Scenario: Reject a request that combines a page number with a cursor
+    Given I request the list of users with parameters:
+      | page[size] | 5 |
+    When I request the next page of users with page number 2
+    Then the response status should be 400
