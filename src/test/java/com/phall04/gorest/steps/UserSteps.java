@@ -219,6 +219,18 @@ public class UserSteps {
                 "page[after]", cursor)));
     }
 
+    @And("every returned user should have status {string}")
+    public void everyReturnedUserShouldHaveStatus(String status) {
+        context.getResponse().then()
+                .body("data.status", everyItem(equalTo(status)));
+    }
+
+    @And("every returned user should have an email ending {string}")
+    public void everyReturnedUserShouldHaveAnEmailEnding(String email) {
+        context.getResponse().then()
+                .body("data.status", everyItem(contains(email)));
+    }
+
     @After
     public void deleteCreatedUser() {
         if (createdUserId != null && !userDeleted) {
