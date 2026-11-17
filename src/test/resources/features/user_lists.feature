@@ -11,7 +11,6 @@ Feature: User lists
       | page[size] | <size> |
     Then the response status should be 200
     And the response should contain <size> users
-
     Examples:
       | size |
       | 1    |
@@ -22,7 +21,6 @@ Feature: User lists
     When I request the list of users with parameters:
       | page[size] | <size> |
     Then the response status should be 400
-
     Examples:
       | size |
       | 0    |
@@ -64,7 +62,7 @@ Feature: User lists
     When I request the next page of users with page number 2
     Then the response status should be 400
 
-    Scenario: Filter user list using filter[status]
+  Scenario: Filter user list using filter[status]
       Given I request the list of users with parameters:
         | filter[status] | active |
       Then the response status should be 200
@@ -76,9 +74,41 @@ Feature: User lists
     Then the response status should be 200
     And every returned user should have an email ending "@example.com"
 
-    @known-defect
-    Scenario: Filter using field[]
+  @known-defect
+  Scenario: Filter using field[]
       Given I request the list of users with parameters:
         | fields[users] | id,name |
       Then the response status should be 200
       And every returned user should have an id and name
+      And every user should not have an email and status
+
+  Scenario Outline: Sort users by <field> in <direction> order
+    When I request the list of users with parameters:
+      | sort | <sort> |
+    Then the response status should be 200
+    And the response should contain at least one user
+    Then the users should be sorted by "<field>" in "<direction>" order
+
+    Examples:
+      | sort        | field      | direction  |
+      | name        | name       | ascending  |
+      | -name       | name       | descending |
+      | email       | email      | ascending  |
+      | -email      | email      | descending |
+      | created_at  | created_at | ascending  |
+      | -created_at | created_at | descending |
+
+  Scenario: Sort users newest first by default
+    When I request the list of users
+    Then the response status should be 200
+    Then the users should be sorted by "created_at" in "descending" order
+
+  Scenario Outline: Reject an invalid sort of <sort>
+    When I request the list of users with parameters:
+      | sort | <sort> |
+    Then the response status should be 400
+
+    Examples:
+      | sort       |
+      | status     |
+      | name,email |

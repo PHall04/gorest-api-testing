@@ -11,10 +11,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.hamcrest.MatcherAssert;
 
-import java.util.List;
-import java.util.Map;
-
-import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 
@@ -237,10 +235,38 @@ public class UserSteps {
                 .body("data.id", everyItem(not(equalTo(null))));
         context.getResponse().then()
                 .body("data.name", everyItem(not(equalTo(null))));
+    }
+
+    @And("every user should not have an email and status")
+    public void everyUserShouldNotHaveAnEmailAndStatus() {
         context.getResponse().then()
                 .body("data.email", everyItem((equalTo(null))));
         context.getResponse().then()
                 .body("data.status", everyItem((equalTo(null))));
+    }
+
+    @Then("the users should be sorted by {string} in {string} order")
+    public void theUsersShouldBeSortedByInOrder(String field, String direction) {
+        List<String> actual = context.getResponse().jsonPath().getList("data." + field, String.class);
+
+        Comparator<String> comparator = comparatorFor(field);
+        if (direction.equals("descending")) {
+            comparator = comparator.reversed();
+        }
+
+        List<String> sorted = new ArrayList<>(actual);
+        sorted.sort(comparator);
+
+        MatcherAssert.assertThat(field + " sorted " + direction, actual, equalTo(sorted));
+    }
+
+    private Comparator<String> comparatorFor(String field) {
+        return switch (field) {
+            case "name" -> String.CASE_INSENSITIVE_ORDER;
+            case "email" -> Comparator.naturalOrder();
+            case "created_at" -> Comparator.comparing(OffsetDateTime::parse);
+            default -> throw new IllegalArgumentException("No comparator for field: " + field);
+        };
     }
 
     @After
@@ -249,5 +275,4 @@ public class UserSteps {
             userClient.deleteUser(createdUserId).then().statusCode(204);
         }
     }
-
 }
