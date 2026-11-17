@@ -20,9 +20,11 @@ public class UserSteps {
     private final UserClient userClient = new UserClient();
     private User newUser;
     private String createdUserId;
+
     private boolean userDeleted;
     private final TestContext context;
     private List previousPageID;
+    private List previousUserID;
 
     public UserSteps(TestContext context) {
         this.context = context;
@@ -30,6 +32,10 @@ public class UserSteps {
 
     private static String uniqueEmail() {
         return "api-test-" + UUID.randomUUID() + "@example.com";
+    }
+
+    private void rememberCurrentIds() {
+        previousUserID = context.getResponse().jsonPath().getList("data.id");
     }
 
     @Given("I have valid new user details")
@@ -267,6 +273,28 @@ public class UserSteps {
             case "created_at" -> Comparator.comparing(OffsetDateTime::parse);
             default -> throw new IllegalArgumentException("No comparator for field: " + field);
         };
+    }
+
+    @And("every returned user should have a name or email containing {string}")
+    public void everyReturnedUserShouldHaveANameOrEmailContaining(String term) {
+        List<User> users = context.getResponse().jsonPath().getList("data", User.class);
+
+        for (User user : users) {
+            String searchable = user.name() + " | " + user.email();
+            MatcherAssert.assertThat("user " + user.id() + " should match \"" + term + "\"",
+                    searchable, containsStringIgnoringCase(term));
+        }
+    }
+
+    @When("I search the users for {string}")
+    public void iSearchTheUsersFor(String term) {
+        rememberCurrentIds();
+        context.setResponse(userClient.getUsers(Map.of("search", term)));
+    }
+
+    @Then("the response should contain the same users as the previous search")
+    public void theResponseShouldContainTheSameUsersAsThePreviousSearch() {
+        context.getResponse().then().body("data.id", equalTo(previousUserID));
     }
 
     @After

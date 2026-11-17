@@ -112,3 +112,30 @@ Feature: User lists
       | sort       |
       | status     |
       | name,email |
+
+  Scenario Outline: Search users for "<term>"
+    When I request the list of users with parameters:
+      | search | <term> |
+    Then the response status should be 200
+    And the response should contain at least one user
+    And every returned user should have a name or email containing "<term>"
+
+    Examples:
+      | term   |
+      | sharma |
+      | SHARMA |
+      | ShArmA |
+      | shar   |
+
+  Scenario: Search returns the same users regardless of case
+    Given I request the list of users with parameters:
+      | search | sharma |
+    When I search the users for "SHARMA"
+    Then the response status should be 200
+    And the response should contain the same users as the previous search
+
+  Scenario: Search with no matches
+    When I request the list of users with parameters:
+      | search | zzzz-no-match |
+    Then the response status should be 200
+    And the response should contain 0 users
