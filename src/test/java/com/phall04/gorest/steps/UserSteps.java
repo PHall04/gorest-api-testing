@@ -228,7 +228,19 @@ public class UserSteps {
     @And("every returned user should have an email ending {string}")
     public void everyReturnedUserShouldHaveAnEmailEnding(String email) {
         context.getResponse().then()
-                .body("data.status", everyItem(contains(email)));
+                .body("data.email", everyItem(contains(email)));
+    }
+
+    @And("every returned user should have an id and name")
+    public void everyReturnedUserShouldHaveAnIdAndName() {
+        context.getResponse().then()
+                .body("data.id", everyItem(not(equalTo(null))));
+        context.getResponse().then()
+                .body("data.name", everyItem(not(equalTo(null))));
+        context.getResponse().then()
+                .body("data.email", everyItem((equalTo(null))));
+        context.getResponse().then()
+                .body("data.status", everyItem((equalTo(null))));
     }
 
     @After
@@ -237,6 +249,5 @@ public class UserSteps {
             userClient.deleteUser(createdUserId).then().statusCode(204);
         }
     }
-
 
 }

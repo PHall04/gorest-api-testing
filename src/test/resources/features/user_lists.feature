@@ -68,10 +68,17 @@ Feature: User lists
       Given I request the list of users with parameters:
         | filter[status] | active |
       Then the response status should be 200
-      And every returned user should have status "status"
+      And every returned user should have status "active"
 
   Scenario: Filter user list using filter[email]
     Given I request the list of users with parameters:
       | filter[email] | @example.com |
     Then the response status should be 200
-    And every returned user should have an email ending "email"
+    And every returned user should have an email ending "@example.com"
+
+    @known-defect
+    Scenario: Filter using field[]
+      Given I request the list of users with parameters:
+        | fields[users] | id,name |
+      Then the response status should be 200
+      And every returned user should have an id and name
