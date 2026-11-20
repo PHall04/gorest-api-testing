@@ -11,10 +11,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.hamcrest.MatcherAssert;
 
-import java.util.List;
-import java.util.Map;
-
-import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 
@@ -22,9 +20,11 @@ public class UserSteps {
     private final UserClient userClient = new UserClient();
     private User newUser;
     private String createdUserId;
+
     private boolean userDeleted;
     private final TestContext context;
     private List previousPageID;
+    private List previousUserID;
 
     public UserSteps(TestContext context) {
         this.context = context;
@@ -32,6 +32,10 @@ public class UserSteps {
 
     private static String uniqueEmail() {
         return "api-test-" + UUID.randomUUID() + "@example.com";
+    }
+
+    private void rememberCurrentIds() {
+        previousUserID = context.getResponse().jsonPath().getList("data.id");
     }
 
     @Given("I have valid new user details")
@@ -228,7 +232,69 @@ public class UserSteps {
     @And("every returned user should have an email ending {string}")
     public void everyReturnedUserShouldHaveAnEmailEnding(String email) {
         context.getResponse().then()
-                .body("data.status", everyItem(contains(email)));
+                .body("data.email", everyItem(contains(email)));
+    }
+
+    @And("every returned user should have an id and name")
+    public void everyReturnedUserShouldHaveAnIdAndName() {
+        context.getResponse().then()
+                .body("data.id", everyItem(not(equalTo(null))));
+        context.getResponse().then()
+                .body("data.name", everyItem(not(equalTo(null))));
+    }
+
+    @And("every user should not have an email and status")
+    public void everyUserShouldNotHaveAnEmailAndStatus() {
+        context.getResponse().then()
+                .body("data.email", everyItem((equalTo(null))));
+        context.getResponse().then()
+                .body("data.status", everyItem((equalTo(null))));
+    }
+
+    @Then("the users should be sorted by {string} in {string} order")
+    public void theUsersShouldBeSortedByInOrder(String field, String direction) {
+        List<String> actual = context.getResponse().jsonPath().getList("data." + field, String.class);
+
+        Comparator<String> comparator = comparatorFor(field);
+        if (direction.equals("descending")) {
+            comparator = comparator.reversed();
+        }
+
+        List<String> sorted = new ArrayList<>(actual);
+        sorted.sort(comparator);
+
+        MatcherAssert.assertThat(field + " sorted " + direction, actual, equalTo(sorted));
+    }
+
+    private Comparator<String> comparatorFor(String field) {
+        return switch (field) {
+            case "name" -> String.CASE_INSENSITIVE_ORDER;
+            case "email" -> Comparator.naturalOrder();
+            case "created_at" -> Comparator.comparing(OffsetDateTime::parse);
+            default -> throw new IllegalArgumentException("No comparator for field: " + field);
+        };
+    }
+
+    @And("every returned user should have a name or email containing {string}")
+    public void everyReturnedUserShouldHaveANameOrEmailContaining(String term) {
+        List<User> users = context.getResponse().jsonPath().getList("data", User.class);
+
+        for (User user : users) {
+            String searchable = user.name() + " | " + user.email();
+            MatcherAssert.assertThat("user " + user.id() + " should match \"" + term + "\"",
+                    searchable, containsStringIgnoringCase(term));
+        }
+    }
+
+    @When("I search the users for {string}")
+    public void iSearchTheUsersFor(String term) {
+        rememberCurrentIds();
+        context.setResponse(userClient.getUsers(Map.of("search", term)));
+    }
+
+    @Then("the response should contain the same users as the previous search")
+    public void theResponseShouldContainTheSameUsersAsThePreviousSearch() {
+        context.getResponse().then().body("data.id", equalTo(previousUserID));
     }
 
     @After
@@ -237,6 +303,4 @@ public class UserSteps {
             userClient.deleteUser(createdUserId).then().statusCode(204);
         }
     }
-
-
 }
