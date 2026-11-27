@@ -1,0 +1,14 @@
+# Secrets - must never enter the image
+.env
+.env.*
+
+# VCS / IDE / tooling
+.git
+.github
+.idea
+*.iml
+.claude
+
+# Build output and collected reports
+target
+reports
