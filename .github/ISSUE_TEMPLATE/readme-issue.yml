@@ -1,0 +1,43 @@
+name: README issue
+description: The README instructions are wrong, unclear or missing a step
+title: "[README] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do NOT include your GoREST token anywhere in this issue.
+  - type: input
+    id: section
+    attributes:
+      label: Section
+      description: Which section of the README is this about?
+      placeholder: i.e. 4. Run the tests
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or unclear
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What I expected to happen
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Include any error message from the output
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and shell
+      placeholder: i.e. Windows 11, PowerShell
+    validations:
+      required: true
